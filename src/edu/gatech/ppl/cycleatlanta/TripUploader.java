@@ -116,7 +116,7 @@ public class TripUploader extends AsyncTask<Long, Integer, Boolean> {
 		mDb.openReadOnly();
 		Cursor tripCoordsCursor = mDb.fetchAllCoordsForTrip(tripId);
 
-		// Build the map between JSON fieldname and phone db fieldname:
+		// Build the mMap between JSON fieldname and phone db fieldname:
 		Map<String, Integer> fieldMap = new HashMap<String, Integer>();
 		fieldMap.put(TRIP_COORDS_TIME,
 				tripCoordsCursor.getColumnIndex(DbAdapter.K_POINT_TIME));
@@ -372,7 +372,8 @@ public class TripUploader extends AsyncTask<Long, Integer, Boolean> {
 
 		HttpClient client = new DefaultHttpClient();
 		// TODO: Server URL
-		final String postUrl = "http://cycleatlanta.org/post_dev/";
+		final String postUrl = Application.get().getCurrentRegion().getObaBaseUrl();
+
 		HttpPost postRequest = new HttpPost(postUrl);
 
 		try {

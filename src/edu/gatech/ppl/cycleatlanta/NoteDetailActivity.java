@@ -124,7 +124,7 @@ public class NoteDetailActivity extends Activity {
 			Intent i = new Intent(getApplicationContext(), TabsConfig.class);
 			startActivity(i);
 
-			// And, show the map!
+			// And, show the mMap!
 			xi.putExtra("shownote", note.noteid);
 			xi.putExtra("uploadNote", true);
 			Log.v("Jason", "Noteid: " + String.valueOf(note.noteid));

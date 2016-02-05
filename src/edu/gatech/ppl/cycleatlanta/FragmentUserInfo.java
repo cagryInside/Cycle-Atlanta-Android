@@ -1,5 +1,7 @@
 package edu.gatech.ppl.cycleatlanta;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -8,6 +10,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,12 +19,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-public class FragmentUserInfo extends Fragment {
+import edu.gatech.ppl.cycleatlanta.region.ObaRegionsLoader;
+import edu.gatech.ppl.cycleatlanta.region.elements.ObaRegion;
+
+public class FragmentUserInfo extends Fragment implements
+        LoaderManager.LoaderCallbacks<ArrayList<ObaRegion>> {
 
 	public final static int PREF_AGE = 1;
 	public final static int PREF_ZIPHOME = 2;
@@ -34,9 +44,13 @@ public class FragmentUserInfo extends Fragment {
 	public final static int PREF_RIDERTYPE = 10;
 	public final static int PREF_RIDERHISTORY = 11;
 
-	private static final String TAG = "UserPrefActivity";
+    private static final String RELOAD = ".reload";
 
-	private final static int MENU_SAVE = 0;
+    private Spinner regionSpinner;
+
+    private List<ObaRegion> mObaRegions;
+
+    private boolean mLoaderCheck = false;
 
 	public FragmentUserInfo() {
 	}
@@ -47,64 +61,22 @@ public class FragmentUserInfo extends Fragment {
 		super.onCreate(savedInstanceState);
 		View rootView = inflater.inflate(R.layout.activity_user_info,
 				container, false);
-		// getActivity().getActionBar().setDisplayShowTitleEnabled(true);
-		// getActivity().getActionBar().setDisplayShowHomeEnabled(true);
-
-		// Don't pop up the soft keyboard until user clicks!
-		// this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-		// not using seekbar any more
-		// SeekBar sb = (SeekBar) findViewById(R.id.SeekCycleFreq);
-		// sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-		//
-		// @Override
-		// public void onStopTrackingTouch(SeekBar arg0) {
-		// // TODO Auto-generated method stub
-		// }
-		//
-		// @Override
-		// public void onStartTrackingTouch(SeekBar arg0) {
-		// // TODO Auto-generated method stub
-		// }
-		//
-		// @Override
-		// public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-		// TextView tv = (TextView) findViewById(R.id.TextFreq);
-		// tv.setText(freqDesc[arg1 / 100]);
-		// }
-		// });
-
-		// put on Cycle Atlanta bar
-		// Button btn = (Button) findViewById(R.id.saveButton);
-		// btn.setOnClickListener(new OnClickListener() {
-		// @Override
-		// public void onClick(View arg0) {
-		// Intent intent = new Intent(UserInfoActivity.this,
-		// MainInput.class);
-		// startActivity(intent);
-		// finish();
-		// }
-		//
-		// });
-
 		final Button GetStarted = (Button) rootView
 				.findViewById(R.id.buttonGetStarted);
 		GetStarted.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				// Toast.makeText(getActivity(), "Get Started Clicked",
-				// Toast.LENGTH_LONG).show();
-				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri
-						.parse("http://cycleatlanta.org/instructions-v2/"));
-				startActivity(browserIntent);
-			}
-		});
+            public void onClick(View v) {
+                String tutorialUrl = Application.get().getCurrentRegion().getTutorialUrl();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri
+                        .parse(tutorialUrl));
+                startActivity(browserIntent);
+            }
+        });
 
 		SharedPreferences settings = getActivity().getSharedPreferences(
 				"PREFS", 0);
 		Map<String, ?> prefs = settings.getAll();
 		for (Entry<String, ?> p : prefs.entrySet()) {
 			int key = Integer.parseInt(p.getKey());
-			// CharSequence value = (CharSequence) p.getValue();
 
 			switch (key) {
 			case PREF_AGE:
@@ -146,21 +118,11 @@ public class FragmentUserInfo extends Fragment {
 			case PREF_CYCLEFREQ:
 				((Spinner) rootView.findViewById(R.id.cyclefreqSpinner))
 						.setSelection(((Integer) p.getValue()).intValue());
-				// ((SeekBar)
-				// findViewById(R.id.SeekCycleFreq)).setProgress(((Integer)
-				// p.getValue()).intValue());
 				break;
 			case PREF_GENDER:
 				((Spinner) rootView.findViewById(R.id.genderSpinner))
 						.setSelection(((Integer) p.getValue()).intValue());
 				break;
-			// int x = ((Integer) p.getValue()).intValue();
-			// if (x == 2) {
-			// ((RadioButton) findViewById(R.id.ButtonMale)).setChecked(true);
-			// } else if (x == 1) {
-			// ((RadioButton) findViewById(R.id.ButtonFemale)).setChecked(true);
-			// }
-			// break;
 			}
 		}
 
@@ -173,18 +135,45 @@ public class FragmentUserInfo extends Fragment {
 		return rootView;
 	}
 
-	@Override
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initRegions();
+    }
+
+    private void initRegions() {
+        regionSpinner = (Spinner) getActivity().findViewById(R.id.regionsSpinner);
+
+        Bundle args = new Bundle();
+        args.putBoolean(RELOAD, false);
+        getLoaderManager().initLoader(0, args, this);
+
+        regionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (mLoaderCheck) {
+                    mLoaderCheck = false;
+                    return;
+                }
+                if (mObaRegions != null) {
+                    ObaRegion selectedRegion = mObaRegions.get(position);
+                    Application.get().setCurrentRegion(selectedRegion);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+
+    @Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		// savePreferences();
 	}
 
 	public void savePreferences() {
-		// Toast.makeText(getActivity(), "savePreferences()",
-		// Toast.LENGTH_LONG).show();
-
-		// Save user preferences. We need an Editor object to
-		// make changes. All objects are from android.context.Context
 		SharedPreferences settings = getActivity().getSharedPreferences(
 				"PREFS", 0);
 		SharedPreferences.Editor editor = settings.edit();
@@ -214,66 +203,15 @@ public class FragmentUserInfo extends Fragment {
 
 		editor.putInt("" + PREF_CYCLEFREQ, ((Spinner) getActivity()
 				.findViewById(R.id.cyclefreqSpinner)).getSelectedItemPosition());
-		// editor.putInt("" + PREF_CYCLEFREQ, ((SeekBar)
-		// findViewById(R.id.SeekCycleFreq)).getProgress());
 
 		editor.putInt("" + PREF_GENDER,
 				((Spinner) getActivity().findViewById(R.id.genderSpinner))
 						.getSelectedItemPosition());
-		// RadioGroup rbg = (RadioGroup) findViewById(R.id.RadioGroup01);
-		// if (rbg.getCheckedRadioButtonId() == R.id.ButtonMale) {
-		// editor.putInt("" + PREF_GENDER, 2);
-		// //Log.v(TAG, "gender=" + 2);
-		// }
-		// if (rbg.getCheckedRadioButtonId() == R.id.ButtonFemale) {
-		// editor.putInt("" + PREF_GENDER, 1);
-		// //Log.v(TAG, "gender=" + 1);
-		// }
-
-		// Log.v(TAG,
-		// "ageIndex="
-		// + ((Spinner) findViewById(R.id.ageSpinner))
-		// .getSelectedItemPosition());
-		// Log.v(TAG,
-		// "ethnicityIndex="
-		// + ((Spinner) findViewById(R.id.ethnicitySpinner))
-		// .getSelectedItemPosition());
-		// Log.v(TAG,
-		// "incomeIndex="
-		// + ((Spinner) findViewById(R.id.incomeSpinner))
-		// .getSelectedItemPosition());
-		// Log.v(TAG,
-		// "ridertypeIndex="
-		// + ((Spinner) findViewById(R.id.ridertypeSpinner))
-		// .getSelectedItemPosition());
-		// Log.v(TAG,
-		// "riderhistoryIndex="
-		// + ((Spinner) findViewById(R.id.riderhistorySpinner))
-		// .getSelectedItemPosition());
-		// Log.v(TAG, "ziphome="
-		// + ((EditText) findViewById(R.id.TextZipHome)).getText()
-		// .toString());
-		// Log.v(TAG, "zipwork="
-		// + ((EditText) findViewById(R.id.TextZipWork)).getText()
-		// .toString());
-		// Log.v(TAG, "zipschool="
-		// + ((EditText) findViewById(R.id.TextZipSchool)).getText()
-		// .toString());
-		// Log.v(TAG, "email="
-		// + ((EditText) findViewById(R.id.TextEmail)).getText()
-		// .toString());
-		// Log.v(TAG,
-		// "frequency="
-		// + ((SeekBar) findViewById(R.id.SeekCycleFreq))
-		// .getProgress() / 100);
 
 		// Don't forget to commit your edits!!!
 		editor.commit();
 		Toast.makeText(getActivity(), "User information saved.",
 				Toast.LENGTH_SHORT).show();
-		// Toast.makeText(getActivity(), ""+((Spinner)
-		// getActivity().findViewById(R.id.ageSpinner)).getSelectedItemPosition(),
-		// Toast.LENGTH_LONG).show();
 	}
 
 	/* Creates the menu items */
@@ -296,4 +234,38 @@ public class FragmentUserInfo extends Fragment {
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
+    @Override
+    public Loader<ArrayList<ObaRegion>> onCreateLoader(int id, Bundle args) {
+        boolean refresh = args.getBoolean(RELOAD);
+        return new ObaRegionsLoader(getActivity(), refresh);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<ObaRegion>> loader, ArrayList<ObaRegion> data) {
+        mObaRegions = data;
+        mLoaderCheck = true;
+
+        ArrayList<String> arraySpinner = new ArrayList<String>();
+        ObaRegion currentRegion = Application.get().getCurrentRegion();
+        int selection = 0;
+        int i = 0;
+
+        for (ObaRegion r: data) {
+            arraySpinner.add(r.getName());
+            if (r.getId() == currentRegion.getId()) {
+                selection = i;
+            }
+            i++;
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_list_item_1, arraySpinner);
+        regionSpinner.setAdapter(adapter);
+        regionSpinner.setSelection(selection);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<ObaRegion>> loader) {
+    }
 }
