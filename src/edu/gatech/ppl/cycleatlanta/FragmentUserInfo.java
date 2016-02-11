@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import edu.gatech.ppl.cycleatlanta.region.ObaRegionsLoader;
 import edu.gatech.ppl.cycleatlanta.region.elements.ObaRegion;
+import edu.gatech.ppl.cycleatlanta.region.utils.PreferenceUtils;
 
 public class FragmentUserInfo extends Fragment implements
         LoaderManager.LoaderCallbacks<ArrayList<ObaRegion>> {
@@ -158,6 +159,8 @@ public class FragmentUserInfo extends Fragment implements
                 if (mObaRegions != null) {
                     ObaRegion selectedRegion = mObaRegions.get(position);
                     Application.get().setCurrentRegion(selectedRegion);
+                    PreferenceUtils
+                            .saveBoolean(getString(R.string.preference_key_auto_select_region), false);
                 }
             }
 

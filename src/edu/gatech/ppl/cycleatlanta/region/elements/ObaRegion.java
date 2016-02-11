@@ -35,6 +35,15 @@ public interface ObaRegion {
         public double getLonSpan();
     }
 
+    public interface Open311Servers {
+
+        public String getJuridisctionId();
+
+        public String getApiKey();
+
+        public String getBaseUrl();
+    }
+
     /**
      * @return The ID of this region.
      */
@@ -80,6 +89,8 @@ public interface ObaRegion {
      * @return true if this server supports OBA discovery APIs, false otherwise.
      */
     public boolean getSupportsObaDiscoveryApis();
+
+    public Open311Servers[] getOpen311Servers();
 
     /**
      * @return true if this server supports OBA real-time APIs, false otherwise.
