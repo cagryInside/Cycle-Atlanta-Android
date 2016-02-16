@@ -109,10 +109,6 @@ public class NoteDetailActivity extends Activity {
 
 		note.updateNoteStatus(NoteData.STATUS_COMPLETE);
 
-		// Now create the MainInput Activity so BACK btn works properly
-		// Should not use this.
-
-		// TODO: note uploader
 		if (note.notestatus < NoteData.STATUS_SENT) {
 			// And upload to the cloud database, too! W00t W00t!
 			NoteUploader uploader = new NoteUploader(NoteDetailActivity.this);

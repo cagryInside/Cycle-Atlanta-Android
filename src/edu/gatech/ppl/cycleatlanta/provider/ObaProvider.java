@@ -61,16 +61,12 @@ public class ObaProvider extends ContentProvider {
                             ObaContract.Regions.PATH + " (" +
                             ObaContract.Regions._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                             ObaContract.Regions.NAME + " VARCHAR NOT NULL, " +
-                            ObaContract.Regions.OBA_BASE_URL + " VARCHAR NOT NULL, " +
-                            ObaContract.Regions.SIRI_BASE_URL + " VARCHAR NOT NULL, " +
-                            ObaContract.Regions.LANGUAGE + " VARCHAR NOT NULL, " +
+                            ObaContract.Regions.BASE_URL + " VARCHAR NOT NULL, " +
                             ObaContract.Regions.CONTACT_EMAIL + " VARCHAR NOT NULL, " +
-                            ObaContract.Regions.SUPPORTS_OBA_DISCOVERY + " INTEGER NOT NULL, " +
-                            ObaContract.Regions.SUPPORTS_OBA_REALTIME + " INTEGER NOT NULL, " +
-                            ObaContract.Regions.SUPPORTS_SIRI_REALTIME + " INTEGER NOT NULL, " +
-                            ObaContract.Regions.TWITTER_URL + " INTEGER NOT NULL, " +
+                            ObaContract.Regions.TWITTER_URL + " VARCHAR NOT NULL, " +
+                            ObaContract.Regions.FACEBOOK_URL + " VARCHAR NOT NULL, " +
                             ObaContract.Regions.EXPERIMENTAL + " INTEGER NOT NULL, " +
-                            ObaContract.Regions.TUTORIAL_URL + " INTEGER NOT NULL " +
+                            ObaContract.Regions.TUTORIAL_URL + " VARCHAR NOT NULL " +
                             ");");
             db.execSQL(
                     "CREATE TABLE " +
@@ -78,10 +74,10 @@ public class ObaProvider extends ContentProvider {
                             ObaContract.RegionBounds._ID
                             + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                             ObaContract.RegionBounds.REGION_ID + " INTEGER NOT NULL, " +
-                            ObaContract.RegionBounds.LATITUDE + " REAL NOT NULL, " +
-                            ObaContract.RegionBounds.LONGITUDE + " REAL NOT NULL, " +
-                            ObaContract.RegionBounds.LAT_SPAN + " REAL NOT NULL, " +
-                            ObaContract.RegionBounds.LON_SPAN + " REAL NOT NULL " +
+                            ObaContract.RegionBounds.LOWER_LEFT_LATITUDE + " REAL NOT NULL, " +
+                            ObaContract.RegionBounds.UPPER_RIGHT_LATITUDE + " REAL NOT NULL, " +
+                            ObaContract.RegionBounds.LOWER_LEFT_LONGITUDE + " REAL NOT NULL, " +
+                            ObaContract.RegionBounds.UPPER_RIGHT_LONGITUDE + " REAL NOT NULL " +
                             ");");
             db.execSQL(
                     "CREATE TABLE " +
@@ -155,19 +151,11 @@ public class ObaProvider extends ContentProvider {
         sRegionsProjectionMap.put(ObaContract.Regions._ID, ObaContract.Regions._ID);
         sRegionsProjectionMap.put(ObaContract.Regions.NAME, ObaContract.Regions.NAME);
         sRegionsProjectionMap
-                .put(ObaContract.Regions.OBA_BASE_URL, ObaContract.Regions.OBA_BASE_URL);
-        sRegionsProjectionMap
-                .put(ObaContract.Regions.SIRI_BASE_URL, ObaContract.Regions.SIRI_BASE_URL);
-        sRegionsProjectionMap.put(ObaContract.Regions.LANGUAGE, ObaContract.Regions.LANGUAGE);
+                .put(ObaContract.Regions.BASE_URL, ObaContract.Regions.BASE_URL);
         sRegionsProjectionMap
                 .put(ObaContract.Regions.CONTACT_EMAIL, ObaContract.Regions.CONTACT_EMAIL);
-        sRegionsProjectionMap.put(ObaContract.Regions.SUPPORTS_OBA_DISCOVERY,
-                ObaContract.Regions.SUPPORTS_OBA_DISCOVERY);
-        sRegionsProjectionMap.put(ObaContract.Regions.SUPPORTS_OBA_REALTIME,
-                ObaContract.Regions.SUPPORTS_OBA_REALTIME);
-        sRegionsProjectionMap.put(ObaContract.Regions.SUPPORTS_SIRI_REALTIME,
-                ObaContract.Regions.SUPPORTS_SIRI_REALTIME);
         sRegionsProjectionMap.put(ObaContract.Regions.TWITTER_URL, ObaContract.Regions.TWITTER_URL);
+        sRegionsProjectionMap.put(ObaContract.Regions.FACEBOOK_URL, ObaContract.Regions.FACEBOOK_URL);
         sRegionsProjectionMap.put(ObaContract.Regions.TUTORIAL_URL, ObaContract.Regions.TUTORIAL_URL);
         sRegionsProjectionMap
                 .put(ObaContract.Regions.EXPERIMENTAL, ObaContract.Regions.EXPERIMENTAL);
@@ -177,13 +165,13 @@ public class ObaProvider extends ContentProvider {
         sRegionBoundsProjectionMap
                 .put(ObaContract.RegionBounds.REGION_ID, ObaContract.RegionBounds.REGION_ID);
         sRegionBoundsProjectionMap
-                .put(ObaContract.RegionBounds.LATITUDE, ObaContract.RegionBounds.LATITUDE);
+                .put(ObaContract.RegionBounds.LOWER_LEFT_LATITUDE, ObaContract.RegionBounds.LOWER_LEFT_LATITUDE);
         sRegionBoundsProjectionMap
-                .put(ObaContract.RegionBounds.LONGITUDE, ObaContract.RegionBounds.LONGITUDE);
+                .put(ObaContract.RegionBounds.UPPER_RIGHT_LATITUDE, ObaContract.RegionBounds.UPPER_RIGHT_LATITUDE);
         sRegionBoundsProjectionMap
-                .put(ObaContract.RegionBounds.LAT_SPAN, ObaContract.RegionBounds.LAT_SPAN);
+                .put(ObaContract.RegionBounds.LOWER_LEFT_LONGITUDE, ObaContract.RegionBounds.LOWER_LEFT_LONGITUDE);
         sRegionBoundsProjectionMap
-                .put(ObaContract.RegionBounds.LON_SPAN, ObaContract.RegionBounds.LON_SPAN);
+                .put(ObaContract.RegionBounds.UPPER_RIGHT_LONGITUDE, ObaContract.RegionBounds.UPPER_RIGHT_LONGITUDE);
 
         sRegionOpen311ProjectionMap = new HashMap<String, String>();
         sRegionOpen311ProjectionMap

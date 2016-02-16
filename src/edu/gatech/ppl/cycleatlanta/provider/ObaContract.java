@@ -66,23 +66,7 @@ public final class ObaContract {
          * Type: TEXT
          * </P>
          */
-        public static final String OBA_BASE_URL = "oba_base_url";
-
-        /**
-         * The base SIRI URL.
-         * <P>
-         * Type: TEXT
-         * </P>
-         */
-        public static final String SIRI_BASE_URL = "siri_base_url";
-
-        /**
-         * The locale of the API server.
-         * <P>
-         * Type: TEXT
-         * </P>
-         */
-        public static final String LANGUAGE = "lang";
+        public static final String BASE_URL = "oba_base_url";
 
         /**
          * The email of the person responsible for this server.
@@ -92,29 +76,6 @@ public final class ObaContract {
          */
         public static final String CONTACT_EMAIL = "contact_email";
 
-        /**
-         * Whether or not the server supports OBA discovery APIs.
-         * <P>
-         * Type: BOOLEAN
-         * </P>
-         */
-        public static final String SUPPORTS_OBA_DISCOVERY = "supports_api_discovery";
-
-        /**
-         * Whether or not the server supports OBA realtime APIs.
-         * <P>
-         * Type: BOOLEAN
-         * </P>
-         */
-        public static final String SUPPORTS_OBA_REALTIME = "supports_api_realtime";
-
-        /**
-         * Whether or not the server supports SIRI realtime APIs.
-         * <P>
-         * Type: BOOLEAN
-         * </P>
-         */
-        public static final String SUPPORTS_SIRI_REALTIME = "supports_siri_realtime";
 
         /**
          * The Twitter URL for the region.
@@ -123,6 +84,8 @@ public final class ObaContract {
          * </P>
          */
         public static final String TWITTER_URL = "twitter_url";
+
+        public static final String FACEBOOK_URL = "facebook_url";
 
         /**
          * Whether or not the server is experimental (i.e., not production).
@@ -157,7 +120,7 @@ public final class ObaContract {
          * Type: REAL
          * </P>
          */
-        public static final String LATITUDE = "lat";
+        public static final String LOWER_LEFT_LATITUDE = "lowerLeftLatitude";
 
         /**
          * The longitude center of the agencies coverage area
@@ -165,7 +128,7 @@ public final class ObaContract {
          * Type: REAL
          * </P>
          */
-        public static final String LONGITUDE = "lon";
+        public static final String LOWER_LEFT_LONGITUDE = "lowerLeftLongitude";
 
         /**
          * The height of the agencies bounding box
@@ -173,7 +136,7 @@ public final class ObaContract {
          * Type: REAL
          * </P>
          */
-        public static final String LAT_SPAN = "lat_span";
+        public static final String UPPER_RIGHT_LATITUDE = "upperRightLatitude";
 
         /**
          * The width of the agencies bounding box
@@ -181,7 +144,7 @@ public final class ObaContract {
          * Type: REAL
          * </P>
          */
-        public static final String LON_SPAN = "lon_span";
+        public static final String UPPER_RIGHT_LONGITUDE = "upperRightLongitude";
 
     }
 
@@ -280,14 +243,10 @@ public final class ObaContract {
             final String[] PROJECTION = {
                     _ID,
                     NAME,
-                    OBA_BASE_URL,
-                    SIRI_BASE_URL,
-                    LANGUAGE,
+                    BASE_URL,
                     CONTACT_EMAIL,
-                    SUPPORTS_OBA_DISCOVERY,
-                    SUPPORTS_OBA_REALTIME,
-                    SUPPORTS_SIRI_REALTIME,
                     TWITTER_URL,
+                    FACEBOOK_URL,
                     EXPERIMENTAL,
                     TUTORIAL_URL
 
@@ -304,18 +263,13 @@ public final class ObaContract {
                             c.getString(1),             // Name
                             true,                       // Active
                             c.getString(2),             // OBA Base URL
-                            c.getString(3),             // SIRI Base URL
                             RegionBounds.getRegion(cr, id), // Bounds
                             RegionOpen311Servers.getOpen311Server(cr, id), // Open311 servers
-                            c.getString(4),             // Lang
-                            c.getString(5),             // Contact Email
-                            c.getInt(6) > 0,            // Supports Oba Discovery
-                            c.getInt(7) > 0,            // Supports Oba Realtime
-                            c.getInt(8) > 0,            // Supports Siri Realtime
-                            c.getString(9),              // Twitter URL
-                            c.getInt(10) > 0,               // Experimental
-                            c.getString(9),              // StopInfoUrl
-                            c.getString(11)
+                            c.getString(3),             // Contact Email
+                            c.getString(4),              // Twitter URL
+                            c.getString(5),              // Fb URL
+                            c.getInt(6) > 0,               // Experimental
+                            c.getString(7)
                     );
                 } finally {
                     c.close();
@@ -353,10 +307,10 @@ public final class ObaContract {
 
         public static ObaRegionElement.Bounds[] getRegion(ContentResolver cr, int regionId) {
             final String[] PROJECTION = {
-                    LATITUDE,
-                    LONGITUDE,
-                    LAT_SPAN,
-                    LON_SPAN
+                    LOWER_LEFT_LATITUDE,
+                    UPPER_RIGHT_LATITUDE,
+                    LOWER_LEFT_LONGITUDE,
+                    UPPER_RIGHT_LONGITUDE
             };
             Cursor c = cr.query(CONTENT_URI, PROJECTION,
                     "(" + RegionBounds.REGION_ID + " = " + regionId + ")",

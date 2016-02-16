@@ -171,9 +171,6 @@ public class RequestBase {
             if (TextUtils.isEmpty(response)) {
                 return handler.createFromError(cls, ObaApi.OBA_OK, "OK");
             } else {
-                // {"actionErrors":[],"fieldErrors":{"stopId":["requiredField.stopId"]}}
-                // TODO: Deserialize the JSON and check "fieldErrors"
-                // if this is empty, then it succeeded? Or check for an actual ObaResponse???
                 return handler.createFromError(cls, ObaApi.OBA_INTERNAL_ERROR, response);
             }
 

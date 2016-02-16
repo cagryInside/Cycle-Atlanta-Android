@@ -56,10 +56,8 @@ public class MapHelpV2 {
         // This is fairly simplistic
         for (ObaRegion.Bounds bound : region.getBounds()) {
             // Get the top bound
-            double lat = bound.getLat();
-            double latSpanHalf = bound.getLatSpan() / 2.0;
-            double lat1 = lat - latSpanHalf;
-            double lat2 = lat + latSpanHalf;
+            double lat1 = bound.getLowerLeftLatitude();
+            double lat2 = bound.getUpperRightLatitude();
             if (lat1 < latMin) {
                 latMin = lat1;
             }
@@ -67,10 +65,8 @@ public class MapHelpV2 {
                 latMax = lat2;
             }
 
-            double lon = bound.getLon();
-            double lonSpanHalf = bound.getLonSpan() / 2.0;
-            double lon1 = lon - lonSpanHalf;
-            double lon2 = lon + lonSpanHalf;
+            double lon1 = bound.getLowerLeftLongitude();
+            double lon2 = bound.getUpperRightLongitude();
             if (lon1 < lonMin) {
                 lonMin = lon1;
             }

@@ -324,14 +324,6 @@ public class FragmentMainInput extends Fragment implements
                              float spdMax) {
         this.curDistance = distance;
 
-        // fix GPS Issue to ensure this
-        // // TODO: check task status before doing this?
-        // if (points > 0) {
-        // txtStat.setText("" + points + " data points received...");
-        // } else {
-        // txtStat.setText("Waiting for GPS fix...");
-        // }
-
         txtCurSpeed.setText(String.format("%1.1f mph", spdCurrent));
 
         float miles = 0.0006212f * distance;

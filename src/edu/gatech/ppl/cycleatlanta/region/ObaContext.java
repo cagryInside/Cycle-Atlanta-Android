@@ -107,9 +107,9 @@ public class ObaContext {
 
                 baseUrl = Uri.parse(serverName);
             } else if (mRegion != null) {
-                Log.d(TAG, "Using region base URL '" + mRegion.getObaBaseUrl() + "'.");
+                Log.d(TAG, "Using region base URL '" + mRegion.getBaseUrl() + "'.");
 
-                baseUrl = Uri.parse(mRegion.getObaBaseUrl());
+                baseUrl = Uri.parse(mRegion.getBaseUrl());
             }
 
             // Copy partial path (if one exists) from the base URL

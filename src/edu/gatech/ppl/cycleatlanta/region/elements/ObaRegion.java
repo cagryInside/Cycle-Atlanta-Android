@@ -26,13 +26,13 @@ public interface ObaRegion {
      */
     public interface Bounds {
 
-        public double getLat();
+        public double getLowerLeftLatitude();
 
-        public double getLon();
+        public double getLowerLeftLongitude();
 
-        public double getLatSpan();
+        public double getUpperRightLatitude();
 
-        public double getLonSpan();
+        public double getUpperRightLongitude();
     }
 
     public interface Open311Servers {
@@ -63,12 +63,8 @@ public interface ObaRegion {
     /**
      * @return The base OBA URL for this region, or null if it doesn't have a base OBA URL.
      */
-    public String getObaBaseUrl();
+    public String getBaseUrl();
 
-    /**
-     * @return The base SIRI URL for this region, or null if it doesn't use SIRI.
-     */
-    public String getSiriBaseUrl();
 
     /**
      * @return An array of bounding boxes for the region.
@@ -76,46 +72,22 @@ public interface ObaRegion {
     public Bounds[] getBounds();
 
     /**
-     * @return The primary language for this region.
-     */
-    public String getLanguage();
-
-    /**
      * @return The email of the party responsible for this region's OBA server.
      */
     public String getContactEmail();
 
-    /**
-     * @return true if this server supports OBA discovery APIs, false otherwise.
-     */
-    public boolean getSupportsObaDiscoveryApis();
-
     public Open311Servers[] getOpen311Servers();
-
-    /**
-     * @return true if this server supports OBA real-time APIs, false otherwise.
-     */
-    public boolean getSupportsObaRealtimeApis();
-
-    /**
-     * @return true if this server supports SIRI real-time APIs, false otherwise.
-     */
-    public boolean getSupportsSiriRealtimeApis();
 
     /**
      * @return The Twitter URL for the region
      */
     public String getTwitterUrl();
 
+    public String getFacebookUrl();
     /**
      * @return true if this server is experimental, false if its production.
      */
     public boolean getExperimental();
-
-    /**
-     * @return the StopInfo URL for the region (see #103)
-     */
-    public String getStopInfoUrl();
 
     public String getTutorialUrl();
 }

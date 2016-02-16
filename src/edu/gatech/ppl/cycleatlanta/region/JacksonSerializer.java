@@ -105,7 +105,6 @@ public class JacksonSerializer implements ObaApi.SerializationHandler {
         try {
             T t = getJsonParser(reader).readValueAs(cls);
             if (t == null) {
-                // TODO: test switching from Gson for errors
                 t = createFromError(cls, ObaApi.OBA_INTERNAL_ERROR, "Json error");
             }
             return t;

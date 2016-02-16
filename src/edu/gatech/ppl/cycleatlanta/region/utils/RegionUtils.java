@@ -16,6 +16,8 @@
  */
 package edu.gatech.ppl.cycleatlanta.region.utils;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -128,7 +130,10 @@ public class RegionUtils {
         float[] results = new float[1];
         float minDistance = Float.MAX_VALUE;
         for (ObaRegion.Bounds bound : bounds) {
-            Location.distanceBetween(lat, lon, bound.getLat(), bound.getLon(), results);
+
+            LatLng midpoint = midPoint(bound.getLowerLeftLatitude(), bound.getLowerLeftLongitude(),
+                    bound.getUpperRightLatitude(), bound.getUpperRightLongitude());
+            Location.distanceBetween(lat, lon, midpoint.latitude, midpoint.longitude, results);
             if (results[0] < minDistance) {
                 minDistance = results[0];
             }
@@ -140,108 +145,24 @@ public class RegionUtils {
         return getDistanceAway(region, loc.getLatitude(), loc.getLongitude());
     }
 
-    /**
-     * Returns the center and lat/lon span for the entire region.
-     *
-     * @param results Array to receive results.
-     *                results[0] == latSpan of region
-     *                results[1] == lonSpan of region
-     *                results[2] == lat center of region
-     *                results[3] == lon center of region
-     */
-    public static void getRegionSpan(ObaRegion region, double[] results) {
-        if (results.length < 4) {
-            throw new IllegalArgumentException("Results array is < 4");
-        }
-        if (region == null) {
-            throw new IllegalArgumentException("Region is null");
-        }
-        double latMin = 90;
-        double latMax = -90;
-        double lonMin = 180;
-        double lonMax = -180;
+    public static LatLng midPoint(double lat1,double lon1,double lat2,double lon2){
 
-        // This is fairly simplistic
-        for (ObaRegion.Bounds bound : region.getBounds()) {
-            // Get the top bound
-            double lat = bound.getLat();
-            double latSpanHalf = bound.getLatSpan() / 2.0;
-            double lat1 = lat - latSpanHalf;
-            double lat2 = lat + latSpanHalf;
-            if (lat1 < latMin) {
-                latMin = lat1;
-            }
-            if (lat2 > latMax) {
-                latMax = lat2;
-            }
+        double dLon = Math.toRadians(lon2 - lon1);
 
-            double lon = bound.getLon();
-            double lonSpanHalf = bound.getLonSpan() / 2.0;
-            double lon1 = lon - lonSpanHalf;
-            double lon2 = lon + lonSpanHalf;
-            if (lon1 < lonMin) {
-                lonMin = lon1;
-            }
-            if (lon2 > lonMax) {
-                lonMax = lon2;
-            }
-        }
+        //convert to radians
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+        lon1 = Math.toRadians(lon1);
 
-        results[0] = latMax - latMin;
-        results[1] = lonMax - lonMin;
-        results[2] = latMin + ((latMax - latMin) / 2.0);
-        results[3] = lonMin + ((lonMax - lonMin) / 2.0);
+        double Bx = Math.cos(lat2) * Math.cos(dLon);
+        double By = Math.cos(lat2) * Math.sin(dLon);
+        double lat3 = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + Bx) *
+                (Math.cos(lat1) + Bx) + By * By));
+        double lon3 = lon1 + Math.atan2(By, Math.cos(lat1) + Bx);
+
+        return new LatLng(Math.toDegrees(lat3), Math.toDegrees(lon3));
     }
 
-    /**
-     * Determines if the provided location is within the provided region span
-     *
-     * Note: This does not handle cases when the region span crosses the
-     * International Date Line properly
-     *
-     * @param location   that will be compared to the provided regionSpan
-     * @param regionSpan span information for the region
-     *                   regionSpan[0] == latSpan of region
-     *                   regionSpan[1] == lonSpan of region
-     *                   regionSpan[2] == lat center of region
-     *                   regionSpan[3] == lon center of region
-     * @return true if the location is within the region span, false if it is not
-     */
-    public static boolean isLocationWithinRegion(Location location, double[] regionSpan) {
-        if (regionSpan == null || regionSpan.length < 4) {
-            throw new IllegalArgumentException("regionSpan is null or has length < 4");
-        }
-
-        if (location == null || location.getLongitude() > 180.0 || location.getLongitude() < -180.0
-                ||
-                location.getLatitude() > 90 || location.getLatitude() < -90) {
-            throw new IllegalArgumentException("Location must be a valid location");
-        }
-
-        double minLat = regionSpan[2] - (regionSpan[0] / 2);
-        double minLon = regionSpan[3] - (regionSpan[1] / 2);
-        double maxLat = regionSpan[2] + (regionSpan[0] / 2);
-        double maxLon = regionSpan[3] + (regionSpan[1] / 2);
-
-        return minLat <= location.getLatitude() && location.getLatitude() <= maxLat
-                && minLon <= location.getLongitude() && location.getLongitude() <= maxLon;
-    }
-
-    /**
-     * Determines if the provided location is within the provided region
-     *
-     * Note: This does not handle cases when the region span crosses the
-     * International Date Line properly
-     *
-     * @param location that will be compared to the provided region
-     * @param region   provided region
-     * @return true if the location is within the region, false if it is not
-     */
-    public static boolean isLocationWithinRegion(Location location, ObaRegion region) {
-        double[] regionSpan = new double[4];
-        getRegionSpan(region, regionSpan);
-        return isLocationWithinRegion(location, regionSpan);
-    }
 
     /**
      * Checks if the given region is usable by the app, based on what this app supports
@@ -337,14 +258,10 @@ public class RegionUtils {
             final String[] PROJECTION = {
                     ObaContract.Regions._ID,
                     ObaContract.Regions.NAME,
-                    ObaContract.Regions.OBA_BASE_URL,
-                    ObaContract.Regions.SIRI_BASE_URL,
-                    ObaContract.Regions.LANGUAGE,
+                    ObaContract.Regions.BASE_URL,
                     ObaContract.Regions.CONTACT_EMAIL,
-                    ObaContract.Regions.SUPPORTS_OBA_DISCOVERY,
-                    ObaContract.Regions.SUPPORTS_OBA_REALTIME,
-                    ObaContract.Regions.SUPPORTS_SIRI_REALTIME,
                     ObaContract.Regions.TWITTER_URL,
+                    ObaContract.Regions.FACEBOOK_URL,
                     ObaContract.Regions.EXPERIMENTAL,
                     ObaContract.Regions.TUTORIAL_URL
             };
@@ -379,18 +296,13 @@ public class RegionUtils {
                         c.getString(1),             // Name
                         true,                       // Active
                         c.getString(2),             // OBA Base URL
-                        c.getString(3),             // SIRI Base URL
                         bounds2,                    // Bounds
                         open311Servers2,            // Open311 servers
-                        c.getString(4),             // Lang
-                        c.getString(5),             // Contact Email
-                        c.getInt(6) > 0,            // Supports Oba Discovery
-                        c.getInt(7) > 0,            // Supports Oba Realtime
-                        c.getInt(8) > 0,            // Supports Siri Realtime
-                        c.getString(9),              // Twitter URL
-                        c.getInt(10) > 0,            // Experimental
-                        c.getString(9),             // StopInfoUrl
-                        c.getString(11)
+                        c.getString(3),             // Contact Email
+                        c.getString(4),              // Twitter URL
+                        c.getString(5),              // FB URL
+                        c.getInt(6) > 0,            // Experimental
+                        c.getString(7)
                 ));
 
             } while (c.moveToNext());
@@ -411,10 +323,10 @@ public class RegionUtils {
         try {
             final String[] PROJECTION = {
                     ObaContract.RegionBounds.REGION_ID,
-                    ObaContract.RegionBounds.LATITUDE,
-                    ObaContract.RegionBounds.LONGITUDE,
-                    ObaContract.RegionBounds.LAT_SPAN,
-                    ObaContract.RegionBounds.LON_SPAN
+                    ObaContract.RegionBounds.LOWER_LEFT_LATITUDE,
+                    ObaContract.RegionBounds.UPPER_RIGHT_LATITUDE,
+                    ObaContract.RegionBounds.LOWER_LEFT_LONGITUDE,
+                    ObaContract.RegionBounds.UPPER_RIGHT_LONGITUDE
             };
             HashMap<Long, ArrayList<ObaRegionElement.Bounds>> results
                     = new HashMap<Long, ArrayList<ObaRegionElement.Bounds>>();
@@ -549,14 +461,11 @@ public class RegionUtils {
         boundsArray[0] = bounds;
         ObaRegionElement region = new ObaRegionElement(regionId,
                 BuildConfig.FIXED_REGION_NAME, true,
-                BuildConfig.FIXED_REGION_OBA_BASE_URL, BuildConfig.FIXED_REGION_SIRI_BASE_URL,
-                boundsArray, new ObaRegionElement.Open311Servers[0], BuildConfig.FIXED_REGION_LANG,
+                BuildConfig.FIXED_REGION_OBA_BASE_URL,
+                boundsArray, new ObaRegionElement.Open311Servers[0],
                 BuildConfig.FIXED_REGION_CONTACT_EMAIL,
-                BuildConfig.FIXED_REGION_SUPPORTS_OBA_DISCOVERY_APIS,
-                BuildConfig.FIXED_REGION_SUPPORTS_OBA_REALTIME_APIS,
-                BuildConfig.FIXED_REGION_SUPPORTS_SIRI_REALTIME_APIS,
-                BuildConfig.FIXED_REGION_TWITTER_URL, false,
-                BuildConfig.FIXED_REGION_STOP_INFO_URL, null);
+                BuildConfig.FIXED_REGION_TWITTER_URL,BuildConfig.FIXED_REGION_TWITTER_URL, false,
+                null);
         return region;
     }
 
@@ -606,19 +515,11 @@ public class RegionUtils {
         ContentValues values = new ContentValues();
         values.put(ObaContract.Regions._ID, region.getId());
         values.put(ObaContract.Regions.NAME, region.getName());
-        String obaUrl = region.getObaBaseUrl();
-        values.put(ObaContract.Regions.OBA_BASE_URL, obaUrl != null ? obaUrl : "");
-        String siriUrl = region.getSiriBaseUrl();
-        values.put(ObaContract.Regions.SIRI_BASE_URL, siriUrl != null ? siriUrl : "");
-        values.put(ObaContract.Regions.LANGUAGE, region.getLanguage());
+        String obaUrl = region.getBaseUrl();
+        values.put(ObaContract.Regions.BASE_URL, obaUrl != null ? obaUrl : "");
         values.put(ObaContract.Regions.CONTACT_EMAIL, region.getContactEmail());
-        values.put(ObaContract.Regions.SUPPORTS_OBA_DISCOVERY,
-                region.getSupportsObaDiscoveryApis() ? 1 : 0);
-        values.put(ObaContract.Regions.SUPPORTS_OBA_REALTIME,
-                region.getSupportsObaRealtimeApis() ? 1 : 0);
-        values.put(ObaContract.Regions.SUPPORTS_SIRI_REALTIME,
-                region.getSupportsSiriRealtimeApis() ? 1 : 0);
         values.put(ObaContract.Regions.TWITTER_URL, region.getTwitterUrl());
+        values.put(ObaContract.Regions.FACEBOOK_URL, region.getFacebookUrl());
         values.put(ObaContract.Regions.EXPERIMENTAL, region.getExperimental());
         values.put(ObaContract.Regions.TUTORIAL_URL, region.getTutorialUrl());
         return values;
@@ -627,10 +528,10 @@ public class RegionUtils {
     private static ContentValues toContentValues(long region, ObaRegion.Bounds bounds) {
         ContentValues values = new ContentValues();
         values.put(ObaContract.RegionBounds.REGION_ID, region);
-        values.put(ObaContract.RegionBounds.LATITUDE, bounds.getLat());
-        values.put(ObaContract.RegionBounds.LONGITUDE, bounds.getLon());
-        values.put(ObaContract.RegionBounds.LAT_SPAN, bounds.getLatSpan());
-        values.put(ObaContract.RegionBounds.LON_SPAN, bounds.getLonSpan());
+        values.put(ObaContract.RegionBounds.LOWER_LEFT_LATITUDE, bounds.getLowerLeftLatitude());
+        values.put(ObaContract.RegionBounds.UPPER_RIGHT_LATITUDE, bounds.getUpperRightLatitude());
+        values.put(ObaContract.RegionBounds.LOWER_LEFT_LONGITUDE, bounds.getLowerLeftLongitude());
+        values.put(ObaContract.RegionBounds.UPPER_RIGHT_LONGITUDE, bounds.getUpperRightLongitude());
         return values;
     }
 

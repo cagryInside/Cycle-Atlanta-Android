@@ -232,7 +232,7 @@ public class NoteUploader extends AsyncTask<Long, Integer, Boolean> {
 
 	boolean uploadOneNote(long currentNoteId) {
 		boolean result = false;
-		String postUrl = Application.get().getCurrentRegion().getObaBaseUrl();
+		String postUrl = Application.get().getCurrentRegion().getBaseUrl();
 
 		try {
 

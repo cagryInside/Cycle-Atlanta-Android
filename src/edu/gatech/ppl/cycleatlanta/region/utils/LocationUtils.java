@@ -50,17 +50,6 @@ public class LocationUtils {
 
     public static final long TIME_THRESHOLD = TimeUnit.MINUTES.toMillis(10);  // 10 minutes
 
-    public static Location getDefaultSearchCenter() {
-        ObaRegion region = Application.get().getCurrentRegion();
-        if (region != null) {
-            double results[] = new double[4];
-            RegionUtils.getRegionSpan(region, results);
-            return LocationUtils.makeLocation(results[2], results[3]);
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Compares Location A to Location B - prefers a non-null location that is more recent.  Does
      * NOT take estimated accuracy into account.
@@ -225,17 +214,17 @@ public class LocationUtils {
 
         @Override
         public void onConnected(Bundle bundle) {
-            Log.d(TAG, "GoogleApiClient.onConnected");
+
         }
 
         @Override
         public void onConnectionSuspended(int i) {
-            Log.d(TAG, "GoogleApiClient.onConnectionSuspended");
+
         }
 
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
-            Log.d(TAG, "GoogleApiClient.onConnectionFailed");
+
         }
     }
 }

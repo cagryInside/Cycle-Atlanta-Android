@@ -26,49 +26,50 @@ public class ObaRegionElement implements ObaRegion {
 
         public static final Bounds[] EMPTY_ARRAY = new Bounds[]{};
 
-        private final double lat;
+        private final double lowerLeftLatitude;
 
-        private final double lon;
+        private final double upperRightLatitude;
 
-        private final double latSpan;
+        private final double lowerLeftLongitude;
 
-        private final double lonSpan;
+        private final double upperRightLongitude;
 
         Bounds() {
-            lat = 0;
-            lon = 0;
-            latSpan = 0;
-            lonSpan = 0;
+            lowerLeftLatitude = 0;
+            upperRightLatitude = 0;
+            lowerLeftLongitude = 0;
+            upperRightLongitude = 0;
         }
 
-        public Bounds(double lat,
-                      double lon,
-                      double latSpan,
-                      double lonSpan) {
-            this.lat = lat;
-            this.lon = lon;
-            this.latSpan = latSpan;
-            this.lonSpan = lonSpan;
+        public Bounds(double lowerLeftLatitude,
+                      double upperRightLatitude,
+                      double lowerLeftLongitude,
+                      double upperRightLongitude) {
+            this.lowerLeftLatitude = lowerLeftLatitude;
+            this.upperRightLatitude = upperRightLatitude;
+            this.lowerLeftLongitude = lowerLeftLongitude;
+            this.upperRightLongitude = upperRightLongitude;
+        }
+
+
+        @Override
+        public double getLowerLeftLatitude() {
+            return lowerLeftLatitude;
         }
 
         @Override
-        public double getLat() {
-            return lat;
+        public double getLowerLeftLongitude() {
+            return lowerLeftLongitude;
         }
 
         @Override
-        public double getLon() {
-            return lon;
+        public double getUpperRightLatitude() {
+            return upperRightLatitude;
         }
 
         @Override
-        public double getLatSpan() {
-            return latSpan;
-        }
-
-        @Override
-        public double getLonSpan() {
-            return lonSpan;
+        public double getUpperRightLongitude() {
+            return upperRightLongitude;
         }
     }
 
@@ -117,82 +118,57 @@ public class ObaRegionElement implements ObaRegion {
 
     private final boolean active;
 
-    private final String obaBaseUrl;
-
-    private final String siriBaseUrl;
+    private final String baseUrl;
 
     private final Bounds[] bounds;
 
     private final Open311Servers[] open311Servers;
 
-    private final String language;
-
     private final String contactEmail;
-
-    private final boolean supportsObaDiscoveryApis;
-
-    private final boolean supportsObaRealtimeApis;
-
-    private final boolean supportsSiriRealtimeApis;
 
     private final String twitterUrl;
 
-    private final boolean experimental;
+    private final String facebookUrl;
 
-    private final String stopInfoUrl;
+    private final boolean experimental;
 
     private final String tutorialUrl;
 
     ObaRegionElement() {
         id = 0;
         regionName = "";
-        obaBaseUrl = null;
-        siriBaseUrl = null;
+        baseUrl = null;
         active = false;
         bounds = Bounds.EMPTY_ARRAY;
         open311Servers = Open311Servers.EMPTY_ARRAY;
-        language = "";
         contactEmail = "";
-        supportsObaDiscoveryApis = false;
-        supportsObaRealtimeApis = false;
-        supportsSiriRealtimeApis = false;
         twitterUrl = "";
+        facebookUrl = "";
         experimental = true;
-        stopInfoUrl = "";
         tutorialUrl = "";
     }
 
     public ObaRegionElement(long id,
                             String name,
                             boolean active,
-                            String obaBaseUrl,
-                            String siriBaseUrl,
+                            String baseUrl,
                             Bounds[] bounds,
                             Open311Servers[] open311Servers,
-                            String lang,
                             String contactEmail,
-                            boolean supportsObaDiscoveryApis,
-                            boolean supportsObaRealtimeApis,
-                            boolean supportsSiriRealtimeApis,
                             String twitterUrl,
+                            String facebookUrl,
                             boolean experimental,
-                            String stopInfoUrl,
                             String tutorialUrl) {
         this.id = id;
         this.regionName = name;
         this.active = active;
-        this.obaBaseUrl = obaBaseUrl;
-        this.siriBaseUrl = siriBaseUrl;
+        this.baseUrl = baseUrl;
         this.bounds = bounds;
         this.open311Servers = open311Servers;
-        this.language = lang;
         this.contactEmail = contactEmail;
-        this.supportsObaDiscoveryApis = supportsObaDiscoveryApis;
-        this.supportsObaRealtimeApis = supportsObaRealtimeApis;
-        this.supportsSiriRealtimeApis = supportsSiriRealtimeApis;
         this.twitterUrl = twitterUrl;
+        this.facebookUrl = facebookUrl;
         this.experimental = experimental;
-        this.stopInfoUrl = stopInfoUrl;
         this.tutorialUrl = tutorialUrl;
     }
 
@@ -212,13 +188,8 @@ public class ObaRegionElement implements ObaRegion {
     }
 
     @Override
-    public String getObaBaseUrl() {
-        return obaBaseUrl;
-    }
-
-    @Override
-    public String getSiriBaseUrl() {
-        return siriBaseUrl;
+    public String getBaseUrl() {
+        return baseUrl;
     }
 
     @Override
@@ -227,28 +198,8 @@ public class ObaRegionElement implements ObaRegion {
     }
 
     @Override
-    public String getLanguage() {
-        return language;
-    }
-
-    @Override
     public String getContactEmail() {
         return contactEmail;
-    }
-
-    @Override
-    public boolean getSupportsObaDiscoveryApis() {
-        return supportsObaDiscoveryApis;
-    }
-
-    @Override
-    public boolean getSupportsObaRealtimeApis() {
-        return supportsObaRealtimeApis;
-    }
-
-    @Override
-    public boolean getSupportsSiriRealtimeApis() {
-        return supportsSiriRealtimeApis;
     }
 
     @Override
@@ -262,13 +213,13 @@ public class ObaRegionElement implements ObaRegion {
     }
 
     @Override
-    public boolean getExperimental() {
-        return experimental;
+    public String getFacebookUrl() {
+        return facebookUrl;
     }
 
     @Override
-    public String getStopInfoUrl() {
-        return stopInfoUrl;
+    public boolean getExperimental() {
+        return experimental;
     }
 
     @Override
@@ -312,17 +263,11 @@ public class ObaRegionElement implements ObaRegion {
                 "id=" + id +
                 ", regionName='" + regionName + '\'' +
                 ", active=" + active +
-                ", obaBaseUrl='" + obaBaseUrl + '\'' +
-                ", siriBaseUrl='" + siriBaseUrl + '\'' +
+                ", BaseUrl='" + baseUrl + '\'' +
                 ", bounds=" + Arrays.toString(bounds) +
-                ", language='" + language + '\'' +
                 ", contactEmail='" + contactEmail + '\'' +
-                ", supportsObaDiscoveryApis=" + supportsObaDiscoveryApis +
-                ", supportsObaRealtimeApis=" + supportsObaRealtimeApis +
-                ", supportsSiriRealtimeApis=" + supportsSiriRealtimeApis +
                 ", twitterUrl='" + twitterUrl + '\'' +
                 ", experimental=" + experimental +
-                ", stopInfoUrl='" + stopInfoUrl + '\'' +
                 '}';
     }
 }
