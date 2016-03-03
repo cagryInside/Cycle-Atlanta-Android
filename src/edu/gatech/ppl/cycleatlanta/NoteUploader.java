@@ -50,6 +50,8 @@ import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import edu.gatech.ppl.cycleatlanta.region.elements.ObaRegion;
+
 public class NoteUploader extends AsyncTask<Long, Integer, Boolean> {
 	Context mCtx;
 	DbAdapter mDb;
@@ -232,7 +234,13 @@ public class NoteUploader extends AsyncTask<Long, Integer, Boolean> {
 
 	boolean uploadOneNote(long currentNoteId) {
 		boolean result = false;
-		String postUrl = Application.get().getCurrentRegion().getBaseUrl();
+		ObaRegion currentRegion = Application.get().getCurrentRegion();
+		String postUrl;
+		if (currentRegion != null) {
+			postUrl = currentRegion.getBaseUrl();
+		} else {
+			postUrl = Application.get().getCustomApiUrl();
+		}
 
 		try {
 

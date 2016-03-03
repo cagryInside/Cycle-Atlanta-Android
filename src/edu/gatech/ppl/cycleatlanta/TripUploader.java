@@ -66,6 +66,8 @@ import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import edu.gatech.ppl.cycleatlanta.region.elements.ObaRegion;
+
 public class TripUploader extends AsyncTask<Long, Integer, Boolean> {
 	Context mCtx;
 	DbAdapter mDb;
@@ -371,7 +373,13 @@ public class TripUploader extends AsyncTask<Long, Integer, Boolean> {
 		}
 
 		HttpClient client = new DefaultHttpClient();
-		final String postUrl = Application.get().getCurrentRegion().getBaseUrl();
+		ObaRegion currentRegion = Application.get().getCurrentRegion();
+		String postUrl;
+		if (currentRegion != null) {
+			postUrl = currentRegion.getBaseUrl();
+		} else {
+			postUrl = Application.get().getCustomApiUrl();
+		}
 
 		HttpPost postRequest = new HttpPost(postUrl);
 

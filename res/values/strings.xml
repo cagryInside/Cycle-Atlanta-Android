@@ -104,5 +104,8 @@
     <string name="http_prefix">http://</string>
     <string name="preference_key_experimental_regions">preference_experimental_regions</string>
     <string name="region_region_found">Found %1$s region</string>
+    <string name="custom_api_server">Set Custom Api Server</string>
+    <string name="custom_api_server_title">Custom Api Server</string>
+    <string name="custom_api_url_error">Invalid URL. Please enter a working server url.</string>
 
 </resources>
