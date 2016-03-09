@@ -197,8 +197,9 @@ public class FragmentUserInfo extends Fragment implements
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = edittext.getText().toString();
-                if (validateUrl(value)) {
-                    setCustomApiUrl(value);
+                String validValue = validateUrl(value);
+                if (validValue != null) {
+                    setCustomApiUrl(validValue);
                 } else {
                     resetSelection();
                     Toast.makeText(getActivity(), getString(R.string.custom_api_url_error),
@@ -264,8 +265,8 @@ public class FragmentUserInfo extends Fragment implements
      * @param apiUrl the URL to validate
      * @return true if the provided apiUrl could be a valid URL, false if it could not
      */
-    private boolean validateUrl(String apiUrl) {
-        if (apiUrl == null) return false;
+    private String validateUrl(String apiUrl) {
+        if (apiUrl == null) return null;
 
         try {
             // URI.parse() doesn't tell us if the scheme is missing, so use URL() instead (#126)
@@ -273,8 +274,12 @@ public class FragmentUserInfo extends Fragment implements
         } catch (MalformedURLException e) {
             // Assume HTTP scheme if none is provided
             apiUrl = getString(R.string.http_prefix) + apiUrl;
+            return apiUrl;
         }
-        return Patterns.WEB_URL.matcher(apiUrl).matches();
+        if (Patterns.WEB_URL.matcher(apiUrl).matches())
+            return apiUrl;
+        else
+            return null;
     }
 
     @Override
